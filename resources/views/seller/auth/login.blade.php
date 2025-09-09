@@ -13,11 +13,12 @@
         <h3 class="text-center mb-4">Seller Login</h3>
 
         {{-- Success message --}}
-        @if (session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
+       @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
 
         {{-- Error messages --}}
         @if ($errors->any())

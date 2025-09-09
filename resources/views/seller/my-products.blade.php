@@ -3,7 +3,7 @@
 @section('title', 'My Products')
 
 @section('content')
-<div class="row">
+<div class="row mt-5">
     <div class="col-md-12">
         <!-- Page Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">

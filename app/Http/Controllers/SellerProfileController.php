@@ -3,38 +3,67 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Seller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Seller; // Add this import
 
 class SellerProfileController extends Controller
 {
+    /**
+     * Show the seller profile form.
+     */
     public function edit()
     {
-        $seller = Seller::findOrFail(session('seller_id'));
-        return view('seller.profile.edit', compact('seller'));
+        $seller = Auth::guard('seller')->user();
+
+        return view('seller.profile', compact('seller'));
     }
 
+    /**
+     * Update the seller's profile.
+     */
     public function update(Request $request)
     {
-        $seller = Seller::findOrFail(session('seller_id'));
+        /** @var Seller $seller */
+        $seller = Auth::guard('seller')->user();
 
         $request->validate([
-            'name'     => 'required',
-            'email'    => 'required|email|unique:sellers,email,' . $seller->id,
-            'password' => 'nullable|min:6',
-            'shop_name'=> 'required',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:sellers,email,' . $seller->id,
+            'phone' => 'nullable|string|max:20',
+            'shop_name' => 'nullable|string|max:255',
+            'profile_photo' => 'nullable|image|max:2048',
+            'current_password' => 'nullable|required_with:new_password',
+            'new_password' => 'nullable|min:8|confirmed',
         ]);
 
-        $seller->name = $request->name;
-        $seller->email = $request->email;
-        $seller->shop_name = $request->shop_name;
+        // Update basic fields
+        $data = $request->only('name', 'email', 'phone', 'shop_name');
 
-        if ($request->password) {
-            $seller->password = Hash::make($request->password);
+        // Handle photo upload
+        if ($request->hasFile('profile_photo')) {
+            // Delete old photo
+            if ($seller->profile_photo && file_exists(public_path('storage/' . $seller->profile_photo))) {
+                unlink(public_path('storage/' . $seller->profile_photo));
+            }
+
+            $path = $request->file('profile_photo')->store('seller-photos', 'public');
+            $data['profile_photo'] = $path;
         }
 
-        $seller->save();
+        $seller->update($data);
 
-        return redirect()->route('seller.profile')->with('success', 'Profile updated successfully');
+        // Update password if provided
+        if ($request->filled('new_password')) {
+            if (!Hash::check($request->current_password, $seller->password)) {
+                return back()->withErrors([
+                    'current_password' => 'The current password is incorrect.'
+                ])->withInput($request->except('current_password', 'new_password', 'new_password_confirmation'));
+            }
+
+            $seller->update(['password' => Hash::make($request->new_password)]);
+        }
+
+        return back()->with('success', '✅ Profile updated successfully!');
     }
 }

@@ -27,4 +27,30 @@ class Order extends Model
     {
         return $this->belongsTo(Seller::class);
     }
+
+    /**
+     * Get badge color for status.
+     */
+    public function getStatusBadgeAttribute()
+    {
+        return match($this->status) {
+            'Pending' => 'warning',
+            'Shipped', 'Delivered' => 'success',
+            'Cancelled' => 'danger',
+            default => 'secondary',
+        };
+    }
+
+    /**
+     * Get simplified status label.
+     */
+    public function getStatusLabelAttribute()
+    {
+        return match($this->status) {
+            'Shipped', 'Delivered' => 'Completed',
+            'Pending' => 'Incomplete',
+            'Cancelled' => 'Cancelled',
+            default => 'Pending',
+        };
+    }
 }

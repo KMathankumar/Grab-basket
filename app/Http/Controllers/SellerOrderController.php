@@ -9,19 +9,46 @@ use Illuminate\Support\Facades\Auth;
 class SellerOrderController extends Controller
 {
     /**
+     * Show the order details.
+     */
+  public function show($id)
+{
+    $order = Order::whereHas('product', function ($q) {
+        $q->where('seller_id', Auth::guard('seller')->id());
+    })->with('product')
+      ->findOrFail($id);
+
+    return view('seller.orders.show', compact('order'));
+}
+
+    /**
      * Display a listing of the seller's orders.
      */
     public function index()
     {
-        // Get orders where the product belongs to this seller
-        $query = Order::whereHas('product', function ($query) {
-            $query->where('seller_id', Auth::guard('seller')->id());
+        $query = Order::whereHas('product', function ($q) {
+            $q->where('seller_id', Auth::guard('seller')->id());
         })->with('product');
 
-        // Apply filters
-        if (request('status')) {
-            $query->where('status', request('status'));
+        // Search
+        if (request('search')) {
+            $search = request('search');
+            $query->where('id', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%");
         }
+
+        // Filter by status
+        if (request('status')) {
+            $status = request('status');
+            if ($status === 'Completed') {
+                $query->whereIn('status', ['Shipped', 'Delivered']);
+            } elseif ($status === 'Incomplete') {
+                $query->where('status', 'Pending');
+            } elseif ($status === 'Cancelled') {
+                $query->where('status', 'Cancelled');
+            }
+        }
+
         if (request('start_date')) {
             $query->whereDate('created_at', '>=', request('start_date'));
         }
@@ -31,20 +58,7 @@ class SellerOrderController extends Controller
 
         $orders = $query->latest()->paginate(10);
 
-        return view('seller.orders.index', compact('orders'));
-    }
-
-    /**
-     * Show the order details.
-     */
-    public function show($id)
-    {
-        $order = Order::whereHas('product', function ($query) {
-            $query->where('seller_id', Auth::guard('seller')->id());
-        })->with('product')
-          ->findOrFail($id);
-
-        return view('seller.orders.show', compact('order'));
+        return view('seller.orders', compact('orders'));
     }
 
     /**
@@ -56,8 +70,8 @@ class SellerOrderController extends Controller
             'status' => 'required|in:Pending,Shipped,Delivered,Cancelled',
         ]);
 
-        $order = Order::whereHas('product', function ($query) {
-            $query->where('seller_id', Auth::guard('seller')->id());
+        $order = Order::whereHas('product', function ($q) {
+            $q->where('seller_id', Auth::guard('seller')->id());
         })->findOrFail($id);
 
         $order->update([
@@ -73,8 +87,8 @@ class SellerOrderController extends Controller
      */
     public function export()
     {
-        $orders = Order::whereHas('product', function ($query) {
-            $query->where('seller_id', Auth::guard('seller')->id());
+        $orders = Order::whereHas('product', function ($q) {
+            $q->where('seller_id', Auth::guard('seller')->id());
         })->with('product')
           ->get();
 
@@ -89,6 +103,11 @@ class SellerOrderController extends Controller
 
         // Data
         foreach ($orders as $order) {
+            // Use simplified status label in export
+            $statusLabel = in_array($order->status, ['Shipped', 'Delivered']) 
+                ? 'Completed' 
+                : ($order->status == 'Pending' ? 'Incomplete' : $order->status);
+
             fputcsv($handle, [
                 $order->id,
                 $order->product?->name ?? 'Deleted Product',
@@ -97,7 +116,7 @@ class SellerOrderController extends Controller
                 $order->customer_phone,
                 $order->quantity,
                 $order->total_price,
-                $order->status,
+                $statusLabel,
                 $order->created_at->format('M d, Y'),
             ]);
         }
@@ -105,7 +124,7 @@ class SellerOrderController extends Controller
         fclose($handle);
 
         return response()->stream(
-            function() use ($handle) {},
+            function () use ($handle) {},
             200,
             [
                 "Content-Type" => "text/csv",

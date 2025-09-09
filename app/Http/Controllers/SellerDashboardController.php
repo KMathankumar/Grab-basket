@@ -7,12 +7,10 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 
 class SellerDashboardController extends Controller
 {
-    /**
-     * Show the seller dashboard.
-     */
     public function index(Request $request)
     {
         $sellerId = Auth::guard('seller')->id();
@@ -39,22 +37,27 @@ class SellerDashboardController extends Controller
         $totalProducts = Product::where('seller_id', $sellerId)->count();
         $totalOrders = $orderQuery->count();
         $totalSales = $orderQuery->sum('total_price');
-
-        // ✅ Seller revenue (100% since no commission)
         $sellerRevenue = $totalSales;
 
-        // Recent Orders (paginated)
+        // Recent Orders
         $recentOrders = $orderQuery->latest()->paginate(5);
 
         // Monthly Sales Data for Chart (Last 6 Months)
-        $monthlySales = Order::whereHas('product', function ($q) use ($sellerId) {
+        $monthlySalesQuery = Order::whereHas('product', function ($q) use ($sellerId) {
                 $q->where('seller_id', $sellerId);
             })
             ->whereBetween('created_at', [now()->subMonths(5)->startOfMonth(), now()->endOfMonth()])
             ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, SUM(total_price) as total')
             ->groupBy('year', 'month')
-            ->orderBy('year')->orderBy('month')
-            ->pluck('total', DB::raw("CONCAT(YEAR(created_at), '-', LPAD(MONTH(created_at), 2, '0'))"));
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
+
+        // Convert to map: 'Y-m' => total
+        $monthlySales = $monthlySalesQuery->mapWithKeys(function ($item) {
+            $key = sprintf('%d-%02d', $item->year, $item->month);
+            return [$key => $item->total];
+        });
 
         // Fill last 6 months with 0 if no data
         $chartData = [];

@@ -38,9 +38,10 @@
             background-color: #1a1a1a;
             color: #fff;
         }
+        /* Remove max-width if you want full width on large screens */
         .container {
-            max-width: 800px;
-            
+            /* max-width: 800px; */
+            padding-top: 20px; /* Optional: small padding */
         }
     </style>
 </head>
@@ -48,7 +49,7 @@
     <!-- Seller Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('seller.dashboard') }}">MyStore Seller</a>
+            <a class="navbar-brand" href="{{ route('seller.dashboard') }}">Grab basket</a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -63,9 +64,9 @@
                     <li class="nav-item"><a class="nav-link" href="{{ route('seller.profile') }}">Profile</a></li>
                 </ul>
 
-                <form method="POST" action="{{ route('seller.logout') }}" class="d-flex align-items-center">
+                <form method="POST" action="{{ route('seller.logout') }}">
                     @csrf
-                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
                 </form>
             </div>
         </div>
@@ -82,7 +83,8 @@
     @endif
 
     <!-- Main Content -->
-    <div class="container mt-4">
+    <div class="container-fluid p-3 pt-5">
+        <!-- pt-5 pushes content below fixed navbar -->
         @yield('content')
     </div>
 

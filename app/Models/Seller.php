@@ -10,16 +10,16 @@ class Seller extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
         'shop_name',
+        'profile_photo',
     ];
 
-    // ✅ Make sure password is hashed
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    // ✅ Allow Laravel to find the password field
     public function getAuthPassword()
     {
         return $this->password;
