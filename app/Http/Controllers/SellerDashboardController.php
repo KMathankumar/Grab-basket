@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
-use App\Models\Order;
 use Illuminate\Http\Request;
+use App\Models\Order;
+use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Carbon;
 
 class SellerDashboardController extends Controller
 {
@@ -15,7 +13,7 @@ class SellerDashboardController extends Controller
     {
         $sellerId = Auth::guard('seller')->id();
 
-        // Base query: Orders for products owned by this seller
+        // Base query
         $orderQuery = Order::whereHas('product', function ($q) use ($sellerId) {
             $q->where('seller_id', $sellerId);
         })->with('product');
@@ -42,7 +40,7 @@ class SellerDashboardController extends Controller
         // Recent Orders
         $recentOrders = $orderQuery->latest()->paginate(5);
 
-        // Monthly Sales Data for Chart (Last 6 Months)
+        // Monthly Sales Data (Last 6 Months)
         $monthlySalesQuery = Order::whereHas('product', function ($q) use ($sellerId) {
                 $q->where('seller_id', $sellerId);
             })
@@ -53,13 +51,12 @@ class SellerDashboardController extends Controller
             ->orderBy('month')
             ->get();
 
-        // Convert to map: 'Y-m' => total
         $monthlySales = $monthlySalesQuery->mapWithKeys(function ($item) {
             $key = sprintf('%d-%02d', $item->year, $item->month);
             return [$key => $item->total];
         });
 
-        // Fill last 6 months with 0 if no data
+        // Fill last 6 months
         $chartData = [];
         $labels = [];
         $current = now()->subMonths(5);
@@ -71,14 +68,18 @@ class SellerDashboardController extends Controller
             $current->addMonth();
         }
 
+        // Ensure defaults
+        $labels = $labels ?? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+        $chartData = $chartData ?? [0, 0, 0, 0, 0, 0];
+
         return view('seller.dashboard', compact(
             'totalProducts',
             'totalOrders',
             'totalSales',
             'sellerRevenue',
             'recentOrders',
-            'chartData',
-            'labels'
+            'labels',
+            'chartData'
         ));
     }
 }

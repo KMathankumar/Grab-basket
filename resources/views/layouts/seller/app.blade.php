@@ -14,34 +14,58 @@
             background-color: #f8f9fa;
             font-family: 'Segoe UI', sans-serif;
         }
+
+        /* Reduce navbar height by ~10% */
         .navbar {
             background-color: #1a1a1a;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 54px;
+            padding-top: 0;
+            padding-bottom: 0;
         }
+
         .navbar-brand {
             font-weight: 600;
             color: #fff !important;
-            margin-right: 1rem;
+            font-size: 1.1rem;
+            margin-left: -70px; /* Brand shifted left */
         }
+
         .nav-link {
             color: #adb5bd !important;
-            transition: color 0.2s;
+            font-size: 0.95rem;
+            padding: 0.5rem 0.8rem;
         }
+
         .nav-link:hover {
             color: #fff !important;
         }
-        .btn-outline-light {
-            border-color: #adb5bd;
-            color: #adb5bd;
+
+        /* Logout Button - Fixed red, no hover effect, far right */
+        .logout-button {
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: white !important;
+            margin-left:100%; /* Pushes form to the right */
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+            transition: none !important;
         }
-        .btn-outline-light:hover {
-            background-color: #1a1a1a;
-            color: #fff;
+
+        .logout-button:hover,
+        .logout-button:focus {
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: white !important;
+            transform: none;
+            box-shadow: none;
         }
-        /* Remove max-width if you want full width on large screens */
-        .container {
-            /* max-width: 800px; */
-            padding-top: 20px; /* Optional: small padding */
+
+        /* Compact main content padding */
+        .container-fluid {
+            padding-top: 1.2rem;
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
         }
     </style>
 </head>
@@ -64,9 +88,12 @@
                     <li class="nav-item"><a class="nav-link" href="{{ route('seller.profile') }}">Profile</a></li>
                 </ul>
 
-                <form method="POST" action="{{ route('seller.logout') }}">
+                <!-- Logout Button - Aligned to far right -->
+                <form method="POST" action="{{ route('seller.logout') }}" class="d-flex">
                     @csrf
-                    <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+                    <button type="submit" class="btn btn-danger btn-sm logout-button">
+                        Logout
+                    </button>
                 </form>
             </div>
         </div>
@@ -83,14 +110,15 @@
     @endif
 
     <!-- Main Content -->
-    <div class="container-fluid p-3 pt-5">
-        <!-- pt-5 pushes content below fixed navbar -->
+    <div class="container-fluid">
         @yield('content')
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+@stack('scripts')    <script>
+        // Auto-show toast notifications
         document.addEventListener('DOMContentLoaded', function () {
             const toastEl = document.querySelector('.toast');
             if (toastEl) {

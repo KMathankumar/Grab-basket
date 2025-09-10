@@ -3,56 +3,34 @@
 @section('title', 'My Profile')
 
 @section('content')
-<div class="container-fluid px-4 ">
-    <div class="d-flex justify-content-between align-items-center mb-4 ">
-        <h1>My Profile</h1>
-    </div>
-
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    @if($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
+<div class="container-fluid px-4 pt-5">
     <div class="row">
-        <!-- Profile Photo Upload -->
-        <div class="text-center mb-4">
-            <div style="width: 100px; height: 100px; border-radius: 50%; overflow: hidden; margin: 0 auto;">
-                <img src="{{ $seller->profile_photo ? asset('storage/' . $seller->profile_photo) : 'https://placehold.co/100x100?text=Profile' }}" 
-                     alt="Profile Photo" 
-                     class="w-100 h-100 object-fit-cover">
-            </div>
-            <p class="mt-2">
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('photo-upload').click()">
-                    Change Photo
-                </button>
-            </p>
-            <form action="{{ route('seller.profile.update') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
-                <input type="file" 
-                       id="photo-upload" 
-                       name="profile_photo" 
-                       accept="image/*" 
-                       class="d-none"
-                       onchange="this.form.submit()">
-            </form>
-        </div>
-
-        <!-- Profile Form -->
+        <!-- Left Side: Profile Info -->
         <div class="col-lg-8">
-            <div class="card">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>My Profile</h1>
+            </div>
+
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <!-- Profile Information Card -->
+            <div class="card mb-4">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">Profile Information</h5>
                 </div>
@@ -87,8 +65,35 @@
             </div>
         </div>
 
-        <!-- Change Password -->
+        <!-- Right Side: Profile Photo + Change Password -->
         <div class="col-lg-4">
+            <!-- Profile Photo & Button -->
+            <div class="text-center mb-4">
+                <div style="width: 100px; height: 100px; border-radius: 50%; overflow: hidden; margin: 0 auto;">
+                    <img src="{{ $seller->profile_photo ? asset('storage/' . $seller->profile_photo) : 'https://placehold.co/100x100?text=Me' }}" 
+                         alt="Profile Photo" 
+                         class="w-100 h-100 object-fit-cover">
+                </div>
+                <p class="mt-2">
+                    <button type="button" 
+                            class="btn btn-sm btn-outline-primary" 
+                            onclick="document.getElementById('photo-upload').click()">
+                        Change Photo
+                    </button>
+                </p>
+                <form action="{{ route('seller.profile.update') }}" method="POST" enctype="multipart/form-data" class="d-inline">
+                    @csrf
+                    @method('PUT')
+                    <input type="file" 
+                           id="photo-upload" 
+                           name="profile_photo" 
+                           accept="image/*" 
+                           class="d-none"
+                           onchange="this.form.submit()">
+                </form>
+            </div>
+
+            <!-- Change Password Form -->
             <div class="card">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">Change Password</h5>

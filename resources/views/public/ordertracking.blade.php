@@ -2,11 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Track Order #{{ $order->id }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #f8f9fa; }
+        body { background-color: #f8f9fa; }
         .tracking-card { border: 1px solid #e9ecef; border-radius: 10px; }
+        .status-badge { font-size: 0.85em; padding: 0.5em 0.8em; border-radius: 50px; }
     </style>
 </head>
 <body>
@@ -16,7 +18,7 @@
             <p class="lead">Track your order status below</p>
         </div>
 
-        <div class="card shadow-sm tracking-card">
+        <div class="card tracking-card shadow-sm">
             <div class="card-body">
                 <h5 class="card-title">Order #{{ $order->id }}</h5>
 
@@ -28,10 +30,7 @@
                     </div>
                     <div class="col-md-6">
                         <p><strong>Status:</strong>
-                            <span class="badge 
-                                @if(in_array($order->status, ['Shipped', 'Delivered'])) bg-success
-                                @elseif($order->status == 'Pending') bg-warning
-                                @else bg-danger @endif">
+                            <span class="status-badge bg-{{ $order->status_badge }} text-white">
                                 {{ $order->status }}
                             </span>
                         </p>

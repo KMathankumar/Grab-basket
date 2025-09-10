@@ -10,47 +10,62 @@
             <div class="toast-body">
                 {{ session('success') }}
             </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
     </div>
 @endif
 
 <!-- Main Dashboard -->
-<div class="container-fluid p-0"> <!-- ✅ Removed px-4, use p-0 -->
- <div class="px-4 pt-5">
-            <h3 class="mb-4">Welcome, {{ auth('seller')->user()->name }}!</h3>
+<div class="container-fluid p-0">
+    <div class="px-4 pt-5">
+        <h3 class="mb-4">Welcome, {{ auth('seller')->user()->name }}!</h3>
 
         <!-- Stats Row -->
         <div class="row g-3 mb-4">
+            <!-- Total Sales -->
             <div class="col-6 col-md-3">
-                <div class="card-box bg-light p-3 rounded">
-                    <h6>Total Sales</h6>
-                    <div class="stat-value fw-bold">${{ number_format($totalSales ?? 0, 2) }}</div>
-                </div>
+                <a href="{{ route('seller.orders') }}" class="text-decoration-none">
+                    <div class="card bg-primary text-white p-3 rounded shadow-sm h-100">
+                        <h6 class="mb-0">Total Sales</h6>
+                        <div class="fw-bold">${{ number_format($totalSales ?? 0, 2) }}</div>
+                    </div>
+                </a>
             </div>
+
+            <!-- Products -->
             <div class="col-6 col-md-3">
-                <div class="card-box bg-light p-3 rounded">
-                    <h6>Products</h6>
-                    <div class="stat-value fw-bold">{{ $totalProducts ?? 0 }}</div>
-                </div>
+                <a href="{{ route('seller.products.index') }}" class="text-decoration-none">
+                    <div class="card bg-success text-white p-3 rounded shadow-sm h-100">
+                        <h6 class="mb-0">Products</h6>
+                        <div class="fw-bold">{{ $totalProducts ?? 0 }}</div>
+                    </div>
+                </a>
             </div>
+
+            <!-- Orders -->
             <div class="col-6 col-md-3">
-                <div class="card-box bg-light p-3 rounded">
-                    <h6>Orders</h6>
-                    <div class="stat-value fw-bold">{{ $totalOrders ?? 0 }}</div>
-                </div>
+                <a href="{{ route('seller.orders') }}" class="text-decoration-none">
+                    <div class="card bg-info text-white p-3 rounded shadow-sm h-100">
+                        <h6 class="mb-0">Orders</h6>
+                        <div class="fw-bold">{{ $totalOrders ?? 0 }}</div>
+                    </div>
+                </a>
             </div>
+
+            <!-- Your Revenue -->
             <div class="col-6 col-md-3">
-                <div class="card-box bg-light p-3 rounded">
-                    <h6>Your Revenue</h6>
-                    <div class="stat-value fw-bold">${{ number_format($sellerRevenue ?? 0, 2) }}</div>
-                </div>
+                <a href="{{ route('seller.orders') }}" class="text-decoration-none">
+                    <div class="card bg-warning text-dark p-3 rounded shadow-sm h-100">
+                        <h6 class="mb-0">Your Revenue</h6>
+                        <div class="fw-bold">${{ number_format($sellerRevenue ?? 0, 2) }}</div>
+                    </div>
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Charts & Filters Row (Full Width) -->
-    <div class="px-4"> <!-- ✅ Add padding back for content -->
+    <!-- Charts & Filters Row -->
+    <div class="px-4">
         <div class="row mb-4">
             <!-- Sales Chart -->
             <div class="col-12 col-lg-8 mb-4 mb-lg-0">
@@ -87,8 +102,8 @@
         </div>
     </div>
 
-    <!-- Recent Orders Widget (Full Width) -->
-    <div class="px-4"> <!-- ✅ Add padding for table -->
+    <!-- Recent Orders Widget -->
+    <div class="px-4">
         <div class="card shadow-sm">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Recent Orders</h5>
@@ -119,13 +134,11 @@
                                         <td>{{ optional($order->product)->name ?? 'Deleted Product' }}</td>
                                         <td>{{ $order->customer_name ?? 'Unknown' }}</td>
                                         <td>
-                                            <span class="status-badge 
-                                                @if($order->status == 'Delivered') status-delivered
-                                                @elseif($order->status == 'Pending') status-pending
-                                                @elseif($order->status == 'Shipped') status-shipped
-                                                @elseif($order->status == 'Cancelled') status-cancelled
-                                                @else text-bg-secondary
-                                                @endif">
+                                            <span class="badge 
+                                                @if(in_array($order->status, ['Shipped', 'Delivered'])) bg-success
+                                                @elseif($order->status == 'Pending') bg-warning
+                                                @elseif($order->status == 'Cancelled') bg-danger
+                                                @else bg-secondary @endif">
                                                 {{ $order->status }}
                                             </span>
                                         </td>
@@ -160,8 +173,8 @@
 
 <!-- Pass Data to JavaScript -->
 <div id="dashboard-data"
-     data-chart-labels='@json($labels ?? [])'
-     data-monthly-sales='@json($chartData ?? [])'
+     data-chart-labels='@json($labels)'
+     data-monthly-sales='@json($chartData)'
      style="display: none;">
 </div>
 
@@ -180,11 +193,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const labelsStr = dataEl.getAttribute('data-chart-labels');
             const salesStr = dataEl.getAttribute('data-monthly-sales');
 
-            chartLabels = labelsStr ? JSON.parse(labelsStr) : [];
-            monthlySales = salesStr ? JSON.parse(salesStr) : [];
+            chartLabels = labelsStr ? JSON.parse(labelsStr) : ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+            monthlySales = salesStr ? JSON.parse(salesStr) : [0, 0, 0, 0, 0, 0];
         } catch (e) {
             console.warn('Failed to parse chart data, using defaults', e);
-            chartLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+            chartLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
             monthlySales = [0, 0, 0, 0, 0, 0];
         }
     }
@@ -197,7 +210,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Render chart
     const ctx = document.getElementById('salesChart');
-    if (!ctx) return;
+    if (!ctx) {
+        console.error('Canvas element #salesChart not found');
+        return;
+    }
 
     new Chart(ctx, {
         type: 'line',

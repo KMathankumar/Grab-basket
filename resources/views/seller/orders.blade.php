@@ -1,29 +1,9 @@
 @extends('layouts.seller.app')
-<br><br>
+
 @section('title', 'My Orders')
 
 @section('content')
-<!-- Toast Notifications -->
-@if(session('success'))
-    <div class="toast align-items-center text-bg-success border-0 position-fixed top-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 1000;">
-        <div class="d-flex">
-            <div class="toast-body">{{ session('success') }}</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    </div>
-@endif
-
-@if(session('error'))
-    <div class="toast align-items-center text-bg-danger border-0 position-fixed top-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 1000;">
-        <div class="d-flex">
-            <div class="toast-body">{{ session('error') }}</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    </div>
-@endif
-
-<!-- Main Content -->
-<div class="container-fluid px-4">
+<div class="container-fluid px-4 pt-5">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>My Orders</h1>
@@ -55,22 +35,22 @@
             </div>
 
             <!-- Start Date -->
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
             </div>
 
             <!-- End Date -->
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
             </div>
-        </div>
 
-        <!-- Submit & Clear Buttons -->
-        <div class="d-flex justify-content-end mt-3">
-            <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-            @if(request()->anyFilled(['search', 'status', 'start_date', 'end_date']))
-                <a href="{{ route('seller.orders') }}" class="btn btn-sm btn-outline-secondary ms-2">Clear</a>
-            @endif
+            <!-- Submit & Clear Buttons -->
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm w-100">Filter</button>
+                @if(request()->anyFilled(['search', 'status', 'start_date', 'end_date']))
+                    <a href="{{ route('seller.orders') }}" class="btn btn-sm btn-outline-secondary ms-2 w-100">Clear</a>
+                @endif
+            </div>
         </div>
     </form>
 
@@ -123,7 +103,7 @@
         </div>
 
         <!-- Pagination -->
-        <div class="d-flex justify-content-center">
+        <div class="d-flex justify-content-center mt-4">
             {{ $orders->appends(request()->query())->links('pagination::bootstrap-5') }}
         </div>
     @endif

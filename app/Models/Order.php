@@ -18,6 +18,7 @@ class Order extends Model
         'status',
     ];
 
+    // ✅ Add missing use statements via FQCN or import
     public function product()
     {
         return $this->belongsTo(Product::class);

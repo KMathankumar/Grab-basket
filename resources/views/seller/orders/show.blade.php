@@ -17,7 +17,7 @@
      style="display: none;">
 </div>
 
-<div class="container-fluid px-4">
+<div class="container-fluid px-4 pt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Order Details #{{ $order->id }}</h1>
         <a href="{{ route('seller.orders') }}" class="btn btn-outline-secondary btn-sm">
